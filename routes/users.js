@@ -6,7 +6,7 @@ var Bank = require('../services/bank');
 
 function authMiddleware(req,res,next){
   //console.log("authMiddleware");
-   if(Bank.getCurrentUser()){
+   if(req.session.currentUser){
       next();
   }
    else{
@@ -49,11 +49,11 @@ router.post('/login',function(req, res, next){
 
     let password=data[username].password
     if(pwd===password){
-     
-         Bank.setCurrentUser(username);
-          res.send({message:"login success!"});
-     // window.location.href="home.html"
-          this.props.history.push("/home");
+          req.session.currentUser=username;
+          Bank.setCurrentUser(username);
+         // res.send({message:"login success!"});
+          // window.location.href="home.html"
+         // this.props.history.push("/home");
     }
     else{
      
@@ -124,7 +124,7 @@ router.post('/withdraw',authMiddleware, function(req, res, next) {
 });
 
 router.get('/transcation-history', function(req, res, next) {
-    let data=Bank.getUsers();
+    let data=req.session.currentUser;
     if(username in data){
       return  res.send({history:data[username].history});
     }

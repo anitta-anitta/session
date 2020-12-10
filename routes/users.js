@@ -10,11 +10,10 @@ function authMiddleware(req,res,next){
       next();
   }
    else{
-     // next("User not authenticated");
-      res.status(401).send({message:"please login"});
+     next("please login");
+     // res.status(401).send({message:"please login"});
   }
   
- 
 }
 
 /* GET users listing. */
@@ -28,16 +27,21 @@ router.post('/register', function(req, res, next) {
         let password=req.body.password;
         let confirmPassword=req.body.confirmPassword;
         let acno=req.body.acno;
-        
-        let data=Bank.getUsers();
-        if(username in data){
-          res.status(400).send({message:"user already exist please login"});
-        }else if(password!==confirmPassword){
+        //let data=Bank.getUsers();
+
+        //if(username in data){
+          //res.status(400).send({message:"user already exist please login"});
+        //}else 
+        if(password!==confirmPassword){
           res.status(400).send({message:"password and confirm password dosen't match"});
         }else{ 
-             Bank.addUser(username,password,acno);
-             res.send({message:"user registered successfully"});
-         }
+            Bank.addUser(username,password,acno)
+            .then(data=>{
+              res.status(data.statusCode).send({message: data.message});
+            })
+             
+            
+          }
   
 });
 router.post('/login',function(req, res, next){
@@ -45,13 +49,12 @@ router.post('/login',function(req, res, next){
   let pwd=req.body.password;
   let data=Bank.getUsers();
  
-  if(username in data){
-
-    let password=data[username].password
+    if(username in data){
+      let password=data[username]["password"];
     if(pwd===password){
           req.session.currentUser=username;
           Bank.setCurrentUser(username);
-         // res.send({message:"login success!"});
+          res.send({message:"login success!"});
           // window.location.href="home.html"
          // this.props.history.push("/home");
     }
@@ -74,6 +77,7 @@ router.post('/deposit',authMiddleware, function(req, res, next) {
   //let btag=document.querySelector("#bal");
   let data=Bank.getUsers();
 if(username in data){
+  console.log(data[username]);
           data[username]["balance"]+=amt
           let bal=data[username]["balance"]
            //btag.textContent="avaliable balance:"+bal
@@ -92,20 +96,18 @@ else{
 
 router.post('/withdraw',authMiddleware, function(req, res, next) {
  
-  let username=req.body.username
-         let amt=Number(req.body.amount);
+         let username=req.body.username
          let data=Bank.getUsers();
          let amt=Number(req.body.amount);
       //   return next(new error("Error"));
      if(username in data){
-       if(username!=Bank.getCurrentUser){
+       if(username!=req.session.currentUser){
         return res.send({message:"Invalid Username"});
        }
              let avlbal=data[username]["balance"]
-             if(amt<avlbal){
+             if(amt>avlbal){
              res.status(400).send({message:"insufficient balance"});
            }
-     else{
               data[username]["balance"]-=amt
                let bal=data[username]["balance"]
                // btag.textContent="available balance:"+bal
@@ -115,8 +117,7 @@ router.post('/withdraw',authMiddleware, function(req, res, next) {
                 amount:amt
             });
             res.send({balance:bal,message:"withdraw Successfully"});
-           
-             }
+                   
      }
      else{
       res.status(400).send({message:"Invalid user"});
@@ -124,9 +125,11 @@ router.post('/withdraw',authMiddleware, function(req, res, next) {
 });
 
 router.get('/transcation-history', function(req, res, next) {
-    let data=req.session.currentUser;
+  
+    let data=Bank.getUsers();
+    let username=req.session.currentUser;
     if(username in data){
-      return  res.send({history:data[username].history});
+      return res.send({history:data[username].history});
     }
     else{
       res.status(400).send({message:"Invalid user"});

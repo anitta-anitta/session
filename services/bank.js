@@ -1,3 +1,5 @@
+const { User } = require('../models/user');
+
 let data={  
  
     user1:{username:"user1",acno:1001,password:"username",balance:3000,history:[]},
@@ -14,7 +16,29 @@ let data={
  }
 
  function addUser(username,password,acno){
-        data[username] = {username,password,acno,history:[],balance:0};
+        User.findOne({            //checking the user exist or not in db
+            username       
+        })
+        .then(user=>{
+            if(user){
+                return {
+                    statusCode:400,
+                    message:"Account Already exist"
+
+                }
+            }
+            const newUser = new User({
+                username,password,acno,history:[],balance:0
+            });
+            newUser.save();
+
+            return {
+                statusCode:200,
+                message:"Account Created Sucessfully"
+
+            }
+        })
+        //data[username] = {username,password,acno,history:[],balance:0};
  }
 
  function setCurrentUser(){

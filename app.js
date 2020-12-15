@@ -7,10 +7,10 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const session = require('express-session');
 const cors = require('cors');
-const mangoose = require('mongoose');
+const mongoose = require('mongoose');
 
 var app = express();
-monggoose.connect('mongodb://localhost:27017/bank-app');  //bank-app:db name
+mongoose.connect('mongodb://localhost:27017/bank-app');  //bank-app:db name
 
 app.use(cors({
   origin:"http://localhost:3000",

@@ -18,10 +18,12 @@ function authMiddleware(req,res,next){
 
 /* GET users listing. */
 router.get('/', authMiddleware,function(req, res, next) {
- // res.send(Bank.getUsers());
-     var result = Bank.getUsers();
-     res.send(result);
-});
+
+   Bank.getUsers()
+   .then(data=>{
+       res.status(data.statusCode).send({message: data.message, users:data.users});
+     });
+  });
 
 router.post('/register', function(req, res, next) {
         let username=req.body.username;
@@ -161,6 +163,13 @@ router.get('/transcation-history', function(req, res, next) {
     }
 });
 
+router.delete('/user', function(req,res){
+
+        Bank.deleteUser(req.body.uname)
+        .then(data=>{
+          res.status(data.statusCode).send({history: data.history});
+        })
+});
 //router.get('/user/:id', function(req, res, next) {
  // res.send(req.params.id);
 //});

@@ -12,11 +12,18 @@ let data={
  let currentUser;
 
  function getUsers(){
-     return data;
+   
+       return User.find({ }).select("username history")
+       .then(users=>{
+           return {
+               statusCode:200,
+               users:users
+           }
+       })
  }
 
  function addUser(username,password,acno){
-        User.findOne({            //checking the user exist or not in db
+      return  User.findOne({            //checking the user exist or not in db
             username       
         })
         .then(user=>{
@@ -62,7 +69,7 @@ let data={
     })
  }
 
-  function deposite(username,amount){
+  function deposit(username,amount){
 
     return User.findOne({
         username,
@@ -99,7 +106,7 @@ let data={
             if(amount>user.balance){
                 return {statusCode:400,balance:user.balance,message:"insufficient balance"};
                }
-            user.balance-=amt
+            user.balance-=amount
             let bal=user.balance
          // btag.textContent="available balance:"+bal
              user.history.push({
@@ -117,6 +124,15 @@ let data={
       })
  }
 
+function deleteUser(username){
+
+    return User.deleteOne({
+        username
+    })
+    .then(data=>{
+        return { statusCode:200, message: "user deletion suceessfully" };
+    })
+}
 
  function setCurrentUser(){
      return currentUser;
@@ -132,8 +148,9 @@ let data={
      getUsers,
      addUser,
      login,
-     deposite,
+     deposit,
      withdraw,
+     deleteUser
     // setCurrentUser:setCurrentUser,
    // getCurrentUser:getCurrentUser
  }
